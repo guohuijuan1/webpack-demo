@@ -28,6 +28,10 @@ module.exports = {
         // https://webpack.js.org/loaders/css-loader/#root
         test: /.less$/,
         use: ['style-loader', 'css-loader', 'less-loader'],
+      },
+      {
+        test: /.(png|gif|svg|jpg)$/,
+        use: 'file-loader'
       }
     ],
   },
