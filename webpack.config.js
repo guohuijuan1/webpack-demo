@@ -32,6 +32,19 @@ module.exports = {
       {
         test: /.(png|gif|svg|jpg)$/,
         use: 'file-loader'
+      },
+      // {
+      //   test: /.(TTF|woff|woff2|otf|eot)$/,
+      //   use: 'file-loader'
+      // },
+      {
+        test: /.(TTF|woff|woff2|otf|eot)$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            limit: 102400,
+          }
+        }]
       }
     ],
   },
