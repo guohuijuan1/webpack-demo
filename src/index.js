@@ -16,8 +16,10 @@ class Hello extends Component {
   render(){
     return (
       <div className="hello-div">
-        {hello()}
-        <img style={{ width: 200}} src={ghjImg} />
+        <figure>
+          <figcaption>{hello()}</figcaption>
+          <img style={{ width: 200}} src={ghjImg} />
+        </figure>
       </div>
     )
   }
