@@ -1,6 +1,12 @@
 'use strict'
 const path = require('path');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+// https://v4.webpack.js.org/plugins/uglifyjs-webpack-plugin/
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// https://webpack.js.org/plugins/css-minimizer-webpack-plugin/#root
+// https://cssnano.co/
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 // loader 用于文件转换，将其他文件类型转换成有效的模块，将之添加到依赖图中；接受源文件作为参数，返回转换结果
 // plugin 用于bundel 文件的优化、资源管理、环境变量的注入等；作用于整个构建过程
@@ -28,6 +34,7 @@ module.exports = {
       {
         // https://webpack.js.org/loaders/css-loader/#root
         test: /.less$/,
+        // use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader'],
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader'],
       },
       {
@@ -56,6 +63,17 @@ module.exports = {
     ],
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src/index.html'),
+      scriptLoading: 'defer',
+      chunks: ['index']
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, 'src/index2.html'),
+      scriptLoading: 'defer',
+      chunks: ['index2'],
+      filename: 'index2.html',
+    }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
@@ -63,4 +81,13 @@ module.exports = {
       // chunkFilename: '[id].css',
     }),
   ],
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new UglifyJsPlugin({
+        parallel: true,
+      }),
+      new CssMinimizerPlugin()
+    ],
+  },
 };
