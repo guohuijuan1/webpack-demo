@@ -8,15 +8,14 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // https://cssnano.co/
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
 const glob = require("glob")
 
 const setMPA = () => {
   const entry = {};
   const htmlWebpackPlugins = [];
   const entryFiles = glob.sync(path.join(__dirname, 'src/*/index.js'))
-  console.log(entryFiles)
   Object.values(entryFiles).map(val => {
-    console.log(val)
     const filename = val.match(/\/src\/([a-zA-Z0-9]*)\/index.js/)[1]
     entry[filename] = val;
     htmlWebpackPlugins.push(new HtmlWebpackPlugin({
@@ -26,7 +25,6 @@ const setMPA = () => {
       filename: `${filename}.html`,
     }))
   })
-  console.log(entry)
   return {
     entry,
     htmlWebpackPlugins,
@@ -55,7 +53,10 @@ module.exports = {
     rules: [
       {
         test: /.js$/,
-        use: 'babel-loader'
+        use: [
+          // 'eslint-loader',
+          'babel-loader',
+        ]
       },
       {
         // https://webpack.js.org/loaders/css-loader/#root
@@ -122,6 +123,32 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
+    // new HtmlWebpackExternalsPlugin({
+    //   externals: [
+    //     {
+    //       module: 'react',
+    //       entry: {
+    //         path: 'https://unpkg.com/react@16/umd/react.production.min.js',
+    //         attributes: {
+    //           // integrity: 'sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=',
+    //           crossorigin: 'anonymous',
+    //         },
+    //       },
+    //       global: 'React',
+    //     },
+    //     {
+    //       module: 'react-dom',
+    //       entry: {
+    //         path: 'https://unpkg.com/react-dom@16/umd/react-dom.production.min.js',
+    //         attributes: {
+    //           // integrity: 'sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=',
+    //           crossorigin: 'anonymous',
+    //         },
+    //       },
+    //       global: 'ReactDOM',
+    //     },
+    //   ],
+    // }),
     ...htmlWebpackPlugins,
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
@@ -136,7 +163,16 @@ module.exports = {
       new UglifyJsPlugin({
         parallel: true,
       }),
-      new CssMinimizerPlugin()
+      new CssMinimizerPlugin(),
     ],
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /(react|react-dom)/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    }
   },
 };

@@ -1,3 +1,4 @@
+'use strict'
 import hello from './hello'
 import './hello.less'
 import React, { Component } from 'react'
@@ -13,12 +14,32 @@ import ReactDOM from 'react-dom'
 // document.body.appendChild(component());
 
 class Hello extends Component {
+  constructor() {
+    super(...arguments);
+    this.state = {
+      Text: null,
+    }
+  }
+  loadComponent () {
+    import('./text').then((Text) => {
+      this.setState({
+        Text: Text.default,
+      })
+    })
+  }
+  a = () => {
+    
+  }
   render(){
+    const { Text } = this.state;
     return (
       <div className="hello-div">
         <figure>
-          <figcaption>{hello()}</figcaption>
+          <figcaption onClick={this.loadComponent.bind(this)}>{hello()}</figcaption>
           <img style={{ width: 200}} src={ghjImg} />
+          {
+            Text ? <Text /> : null
+          }
         </figure>
       </div>
     )
