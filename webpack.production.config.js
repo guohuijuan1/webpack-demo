@@ -8,15 +8,40 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // https://cssnano.co/
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const glob = require("glob")
+
+const setMPA = () => {
+  const entry = {};
+  const htmlWebpackPlugins = [];
+  const entryFiles = glob.sync(path.join(__dirname, 'src/*/index.js'))
+  console.log(entryFiles)
+  Object.values(entryFiles).map(val => {
+    console.log(val)
+    const filename = val.match(/\/src\/([a-zA-Z0-9]*)\/index.js/)[1]
+    entry[filename] = val;
+    htmlWebpackPlugins.push(new HtmlWebpackPlugin({
+      template: path.join(__dirname, `src/${filename}/index.html`),
+      scriptLoading: 'defer',
+      chunks: [filename],
+      filename: `${filename}.html`,
+    }))
+  })
+  console.log(entry)
+  return {
+    entry,
+    htmlWebpackPlugins,
+  }
+}
+const {
+  entry,
+  htmlWebpackPlugins,
+} = setMPA()
 
 // loader 用于文件转换，将其他文件类型转换成有效的模块，将之添加到依赖图中；接受源文件作为参数，返回转换结果
 // plugin 用于bundel 文件的优化、资源管理、环境变量的注入等；作用于整个构建过程
 module.exports = {
   // entry: './src/index.js',
-  entry: {
-    index: './src/index.js',
-    index2: './src/index2.js',
-  },
+  entry,
   output: {
     filename: '[name]_[chunkhash:8].js',
     path: path.resolve(__dirname, 'dist'),
@@ -36,7 +61,39 @@ module.exports = {
         // https://webpack.js.org/loaders/css-loader/#root
         test: /.less$/,
         // use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader'],
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader'],
+        use: [
+          MiniCssExtractPlugin.loader, 
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    // https://github.com/postcss/autoprefixer
+                    'autoprefixer',
+                    {
+                      // browsers: [
+                      //   "last 1 version",
+                      //   "> 1%",
+                      //   "IE 10"
+                      // ]
+                    },
+                  ],
+                ],
+              },
+            },
+          },
+          {
+            loader: 'px2rem-loader',
+            options: {
+              // 1 rem = 75 px;
+              remUni: 75,
+              remPrecision: 8
+            }
+          },
+          'less-loader',
+        ],
       },
       {
         test: /.(png|gif|svg|jpg)$/,
@@ -65,17 +122,7 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src/index.html'),
-      scriptLoading: 'defer',
-      chunks: ['index']
-    }),
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src/index2.html'),
-      scriptLoading: 'defer',
-      chunks: ['index2'],
-      filename: 'index2.html',
-    }),
+    ...htmlWebpackPlugins,
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional

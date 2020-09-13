@@ -1,7 +1,7 @@
 import hello from './hello'
 import './hello.less'
 import React, { Component } from 'react'
-import ghjImg from './img/ghj2-s.jpg'
+import ghjImg from '../img/ghj2-s.jpg'
 import ReactDOM from 'react-dom'
 
 // function component() {
