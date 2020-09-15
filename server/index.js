@@ -14,6 +14,7 @@ const server = (port) => {
   const app = express();
   app.use(express.static('dist'));
   app.get('/index', (req, res) => {
+    console.log(renderToString(SSR))
     const html = renderMarkup(renderToString(SSR));
     console.log(html)
     res.status(200).send(html)
@@ -26,5 +27,5 @@ const server = (port) => {
 server(process.env.PORT || 3000)
 
 const renderMarkup = (str) => {
-  return template.replace('<!--HTML_SSR-->', str)
+  return template.replace('<!--HTML_SSR-->', str).replace('<!--INIT_DATA-->', `<script>window.__INIT_DATA=${JSON.stringify({name: 'ghj'})}</script>`)
 }

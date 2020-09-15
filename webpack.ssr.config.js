@@ -21,10 +21,18 @@ const setMPA = () => {
     entry[filename] = val;
     if (filename) {
       htmlWebpackPlugins.push(new HtmlWebpackPlugin({
+        inlineSource: '.css$',
+        inject: true,
         template: path.join(__dirname, `src/${filename}/index.html`),
         scriptLoading: 'defer',
         chunks: [filename],
         filename: `${filename}.html`,
+        minify:{
+          //删除注释
+          removeComments:false,
+          //删除空格
+          collapseWhitespace:true
+        }
       }))
     }
   })
@@ -105,7 +113,7 @@ module.exports = {
         use: [{
           loader: 'file-loader',
           options: {
-            name: 'img/[name]_[hash:8].[ext]'
+            name: 'img/[name].[ext]'
           }
         }],
       },

@@ -1,6 +1,6 @@
 'use strict'
 const React = require('react');
-const ghjImg = require('../img/ghj2-s.jpg');
+const ghjImg = require('./img/ghj2-s.jpg').default;
 require('./hello.less')
 
 class Hello extends React.Component {
