@@ -9,21 +9,24 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
-const glob = require("glob");
+const glob = require("glob")
 
 const setMPA = () => {
   const entry = {};
   const htmlWebpackPlugins = [];
-  const entryFiles = glob.sync(path.join(__dirname, 'src/*/index.js'))
+  const entryFiles = glob.sync(path.join(__dirname, 'src/*/index-server.js'))
   Object.values(entryFiles).map(val => {
-    const filename = val.match(/\/src\/([a-zA-Z0-9]*)\/index.js/)[1]
+    const match = val.match(/\/src\/([a-zA-Z0-9]*)\/index-server.js/);
+    const filename = match && match[1]
     entry[filename] = val;
-    htmlWebpackPlugins.push(new HtmlWebpackPlugin({
-      template: path.join(__dirname, `src/${filename}/index.html`),
-      scriptLoading: 'defer',
-      chunks: [filename],
-      filename: `${filename}.html`,
-    }))
+    if (filename) {
+      htmlWebpackPlugins.push(new HtmlWebpackPlugin({
+        template: path.join(__dirname, `src/${filename}/index.html`),
+        scriptLoading: 'defer',
+        chunks: [filename],
+        filename: `${filename}.html`,
+      }))
+    }
   })
   return {
     entry,
@@ -34,15 +37,16 @@ const {
   entry,
   htmlWebpackPlugins,
 } = setMPA()
+console.log(entry)
 
 // loader 用于文件转换，将其他文件类型转换成有效的模块，将之添加到依赖图中；接受源文件作为参数，返回转换结果
 // plugin 用于bundel 文件的优化、资源管理、环境变量的注入等；作用于整个构建过程
 module.exports = {
-  // entry: './src/index.js',
   entry,
   output: {
-    filename: '[name]_[chunkhash:8].js',
+    filename: '[name]-server.js',
     path: path.resolve(__dirname, 'dist'),
+    libraryTarget: 'umd',
   },
   // 设置 process.env.NODE_ENV 的值，并开启一些优化选项
   // https://webpack.js.org/configuration/mode/#root
@@ -53,7 +57,6 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
         use: [
           // 'eslint-loader',
           'babel-loader',
@@ -107,7 +110,7 @@ module.exports = {
         }],
       },
       // {
-      //   test: /.(TTF|woff|woff2|otf|eot)$/,
+      //   test: /\.(TTF|woff|woff2|otf|eot)$/,
       //   use: 'file-loader'
       // },
       {
@@ -124,32 +127,31 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    // new HtmlWebpackExternalsPlugin({
-    //   externals: [
-    //     {
-    //       module: 'react',
-    //       entry: {
-    //         path: 'https://unpkg.com/react@16/umd/react.production.min.js',
-    //         attributes: {
-    //           // integrity: 'sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=',
-    //           crossorigin: 'anonymous',
-    //         },
-    //       },
-    //       global: 'React',
-    //     },
-    //     {
-    //       module: 'react-dom',
-    //       entry: {
-    //         path: 'https://unpkg.com/react-dom@16/umd/react-dom.production.min.js',
-    //         attributes: {
-    //           // integrity: 'sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=',
-    //           crossorigin: 'anonymous',
-    //         },
-    //       },
-    //       global: 'ReactDOM',
-    //     },
-    //   ],
-    // }),
+    new HtmlWebpackExternalsPlugin({
+      externals: [
+        {
+          module: 'react',
+          entry: {
+            path: 'https://unpkg.com/react@16/umd/react.production.min.js',
+            attributes: {
+              // integrity: 'sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=',
+              crossorigin: 'anonymous',
+            },
+          },
+          global: 'React',
+        },
+        {
+          module: 'react-dom',
+          entry: {
+            path: 'https://unpkg.com/react-dom@16/umd/react-dom.production.min.js',
+            attributes: {
+              crossorigin: 'anonymous',
+            },
+          },
+          global: 'ReactDOM',
+        },
+      ],
+    }),
     ...htmlWebpackPlugins,
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
@@ -161,9 +163,6 @@ module.exports = {
   optimization: {
     minimize: true,
     minimizer: [
-      // new UglifyJsPlugin({
-      //   parallel: true,
-      // }),
       new CssMinimizerPlugin(),
     ],
     splitChunks: {
