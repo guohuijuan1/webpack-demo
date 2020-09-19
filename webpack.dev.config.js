@@ -1,6 +1,7 @@
 const path = require('path');
 const glob = require("glob");
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin')
 
 const setMPA = () => {
   const entry = {};
@@ -73,11 +74,13 @@ module.exports = {
   },
   plugins: [
     ...htmlWebpackPlugins,
+    new FriendlyErrorsWebpackPlugin(),
   ],
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     compress: true,
-    port: 9000
+    port: 9000,
+    stats: 'errors-only',
   },
   // https://webpack.js.org/configuration/watch/#root
   watch: true,

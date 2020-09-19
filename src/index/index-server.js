@@ -10,6 +10,7 @@ class Hello extends React.Component {
       Text: null,
     }
   }
+  
   loadComponent () {
     import('./text').then((Text) => {
       this.setState({

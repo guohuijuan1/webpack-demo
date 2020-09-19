@@ -8,7 +8,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // https://cssnano.co/
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin')
+const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin')
 const glob = require("glob");
 
 const setMPA = () => {
@@ -157,6 +158,18 @@ module.exports = {
       filename: '[name]_[contenthash:8].css',
       // chunkFilename: '[id].css',
     }),
+    new FriendlyErrorsWebpackPlugin(),
+    function() {
+      this.hooks.done.tap('done', (stats) => {
+        if(stats.compilation.errors
+          && stats.compilation.errors.length
+          && !process.argv.includes('--watch')
+        ) {
+          console.log('build error')
+          process.exit(1)
+        }
+      })
+    }
   ],
   optimization: {
     minimize: true,
@@ -176,4 +189,5 @@ module.exports = {
       },
     }
   },
+  stats: 'errors-only',
 };
