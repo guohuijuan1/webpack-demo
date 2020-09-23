@@ -75,13 +75,6 @@ module.exports = {
                   [
                     // https://github.com/postcss/autoprefixer
                     'autoprefixer',
-                    {
-                      // browsers: [
-                      //   "last 1 version",
-                      //   "> 1%",
-                      //   "IE 10"
-                      // ]
-                    },
                   ],
                 ],
               },
