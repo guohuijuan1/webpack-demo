@@ -11,6 +11,10 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin')
 const glob = require("glob");
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+const smp = new SpeedMeasurePlugin();
 
 const setMPA = () => {
   const entry = {};
@@ -38,7 +42,7 @@ const {
 
 // loader 用于文件转换，将其他文件类型转换成有效的模块，将之添加到依赖图中；接受源文件作为参数，返回转换结果
 // plugin 用于bundel 文件的优化、资源管理、环境变量的注入等；作用于整个构建过程
-module.exports = {
+module.exports = smp.wrap({
   // entry: './src/index.js',
   entry,
   output: {
@@ -56,6 +60,12 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
+          // {
+          //   loader: 'thread-loader',
+          //   options: {
+          //     workers: 3,
+          //   }
+          // },
           // 'eslint-loader',
           'babel-loader',
         ]
@@ -65,7 +75,8 @@ module.exports = {
         test: /\.less$/,
         // use: [MiniCssExtractPlugin.loader, 'css-loader', 'less-loader'],
         use: [
-          MiniCssExtractPlugin.loader, 
+          MiniCssExtractPlugin.loader,
+          // 'thread-loader',
           'css-loader',
           {
             loader: 'postcss-loader',
@@ -152,6 +163,7 @@ module.exports = {
       // chunkFilename: '[id].css',
     }),
     new FriendlyErrorsWebpackPlugin(),
+    // new BundleAnalyzerPlugin(),
     function() {
       this.hooks.done.tap('done', (stats) => {
         if(stats.compilation.errors
@@ -172,15 +184,15 @@ module.exports = {
       // }),
       new CssMinimizerPlugin(),
     ],
-    splitChunks: {
-      cacheGroups: {
-        commons: {
-          test: /(react|react-dom)/,
-          name: 'vendors',
-          chunks: 'all',
-        },
-      },
-    }
+    // splitChunks: {
+    //   cacheGroups: {
+    //     commons: {
+    //       test: /(react|react-dom)/,
+    //       name: 'vendors',
+    //       chunks: 'all',
+    //     },
+    //   },
+    // }
   },
-  stats: 'errors-only',
-};
+  // stats: 'errors-only',
+});
