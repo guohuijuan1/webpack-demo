@@ -63,6 +63,6 @@
   },
   "dependencies": {
     "large-number-ghj": "^1.0.3",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.21"
   }
 }
